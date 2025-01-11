@@ -134,8 +134,8 @@ function combined_scans() {
 # Main function
 function main_menu() {
     clear
-    echo -e "${CYAN}${BOLD}=== Welcome to the Ultimate Nmap Tool ===${RESET}"
-    echo -e "${GREEN}Unleash the full power of Nmap with style.${RESET}"
+    echo -e "${CYAN}${BOLD}=== Welcome to OMAP, the automated nmap tool ===${RESET}"
+    echo -e "${GREEN}Unleash the full power of Nmap.${RESET}"
     echo -e "${RED}Reminder: Only scan networks you own or have permission to test.${RESET}\n"
 
     echo -ne "${CYAN}Enter the target IP or range (e.g., 192.168.1.0/24): ${RESET}"
