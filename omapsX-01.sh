@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # =========================================================
-# Nmap Enhanced with Exploit Finder
+# omapsX ver. 0.1
 # by StGlz
 # =========================================================
 # DESCRIPTION:
