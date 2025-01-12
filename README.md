@@ -2,6 +2,8 @@
 
 OMAP is an automated script designed to unleash the full potential of Nmap, one of the most powerful network scanning tools. This script provides an interactive interface to perform various scans, combine them, and display stylish results, offering a user-friendly and functional experience.
 
+This project was born from the need to have automated tools for a Raspberry Pi Zero 2W. My idea is to make a set of tools to be able to carry this small computer in your pocket and be able to access a series of quick attacks. 
+
 ### Reminder: This project is under construction, it is possible that the code you download may not work at all. If you want to use the software correctly, download the versions separately. You will find them in the “working” folder. Greetings and I hope you find it useful! 
 
 ## Key Features
