@@ -1,15 +1,14 @@
 #!/bin/bash
 
 # =========================================================
-# OMAP Analyzer & Exploiter
+# OMAP - Full Power Nmap with Automated Vulnerability Analysis
 # by StGlz
 # contact: natone@riseup.net
 # visit my ws: https://www.stglz-ecke.digital
 # =========================================================
 # DESCRIPTION:
-# Combines the power of Nmap and searchsploit. Analyze Nmap
-# scan results, identify vulnerabilities, and find related
-# exploits with instructions to use them.
+# Combines Nmap scans with searchsploit to analyze results
+# and find relevant exploits. Use responsibly!
 # =========================================================
 
 # Colors for aesthetics
@@ -21,9 +20,47 @@ CYAN=$(tput setaf 6)
 BOLD=$(tput bold)
 RESET=$(tput sgr0)
 
-# Function to search exploits
+# Loading animation
+function loading_animation() {
+    local message="$1"
+    echo -ne "${CYAN}${BOLD}${message}${RESET}"
+    for i in {1..3}; do
+        echo -ne "."
+        sleep 0.5
+    done
+    echo ""
+}
+
+# Display results with style
+function display_result() {
+    echo -e "\n${YELLOW}${BOLD}=== RESULTS ===${RESET}"
+    echo -e "$1" | while IFS= read -r line; do
+        if [[ $line == *"open"* ]]; then
+            echo -e "${GREEN}${line}${RESET}"
+        elif [[ $line == *"closed"* || $line == *"filtered"* ]]; then
+            echo -e "${RED}${line}${RESET}"
+        else
+            echo -e "${CYAN}${line}${RESET}"
+        fi
+    done
+}
+
+# Function to parse Nmap results and extract vulnerabilities
+function parse_nmap_results() {
+    local nmap_results="$1"
+    echo -e "${BLUE}${BOLD}Parsing Nmap results...${RESET}"
+
+    echo "$nmap_results" | grep -E "^\|_" | sed 's/|_//g' | while IFS= read -r vuln_line; do
+        echo -e "${YELLOW}Found vulnerability:${RESET} $vuln_line"
+        search_exploit "$vuln_line"
+    done
+}
+
+# Function to search for exploits using searchsploit
 function search_exploit() {
     local vuln="$1"
+
+    # Extract the vulnerability identifier
     local clean_vuln
     clean_vuln=$(echo "$vuln" | grep -oE '(ms[0-9]{2}-[0-9]{3}|cve-[0-9]{4}-[0-9]+)')
 
@@ -36,22 +73,26 @@ function search_exploit() {
     local exploits
     exploits=$(searchsploit -w "$clean_vuln" 2>/dev/null)
 
+    # Filter useful results
     local filtered_exploits
-    filtered_exploits=$(echo "$exploits" | awk 'NR > 2 && $1 != "Shellcodes:"')
+    filtered_exploits=$(echo "$exploits" | awk 'NR > 2 && $1 != "Shellcodes:")')
 
     if [[ -z "$filtered_exploits" ]]; then
         echo -e "${RED}No exploits found for:${RESET} $clean_vuln"
     else
         echo -e "${GREEN}Exploits found:${RESET}"
         echo "$filtered_exploits" | while IFS= read -r exploit_line; do
+            # Extract exploit path
             exploit_path=$(echo "$exploit_line" | awk '{print $NF}')
-            if [[ "$exploit_path" == *".rb" ]]; then
+
+            # Determine exploit type by extension
+            if [[ "$exploit_path" == *.rb ]]; then
                 echo -e "  • Use in Metasploit: ${BOLD}msfconsole -r $exploit_path${RESET}"
-            elif [[ "$exploit_path" == *".py" ]]; then
+            elif [[ "$exploit_path" == *.py ]]; then
                 echo -e "  • Run directly: ${BOLD}python $exploit_path${RESET}"
-            elif [[ "$exploit_path" == *".sh" ]]; then
+            elif [[ "$exploit_path" == *.sh ]]; then
                 echo -e "  • Execute script: ${BOLD}bash $exploit_path${RESET}"
-            elif [[ "$exploit_path" == *".c" ]]; then
+            elif [[ "$exploit_path" == *.c ]]; then
                 echo -e "  • Compile and run: ${BOLD}gcc -o exploit $exploit_path && ./exploit${RESET}"
             else
                 echo -e "  • Review manually: ${BOLD}$exploit_line${RESET}"
@@ -61,49 +102,37 @@ function search_exploit() {
     echo ""
 }
 
-# Function to parse Nmap results
-function parse_nmap_results() {
-    local file="$1"
-    echo -e "${BLUE}${BOLD}Parsing Nmap results...${RESET}"
-
-    if [[ ! -f "$file" ]]; then
-        echo -e "${RED}Error: File not found: $file${RESET}"
-        exit 1
-    fi
-
-    local vulnerabilities
-    vulnerabilities=$(grep -oE '_smb-[^:]+: [^,]+' "$file" | sed 's/^_//')
-
-    if [[ -z "$vulnerabilities" ]]; then
-        echo -e "${RED}No vulnerabilities found in Nmap results.${RESET}"
-        exit 0
-    fi
-
-    echo -e "${GREEN}Found vulnerabilities:${RESET}"
-    echo "$vulnerabilities"
-
-    echo -e "\n${CYAN}${BOLD}Analyzing vulnerabilities...${RESET}"
-    while IFS= read -r vuln; do
-        echo -e "\n${YELLOW}Found vulnerability:${RESET} $vuln"
-        search_exploit "$vuln"
-    done <<<"$vulnerabilities"
-}
-
 # Main function
 function main_menu() {
     clear
-    echo -e "${CYAN}${BOLD}=== Welcome to OMAP Analyzer & Exploiter ===${RESET}"
-    echo -e "${GREEN}Analyze Nmap results and find exploits.${RESET}"
+    echo -e "${CYAN}${BOLD}=== Nmap + Exploit Analyzer ===${RESET}"
+    echo -e "${GREEN}Run Nmap scans and analyze vulnerabilities with searchsploit.${RESET}"
+    echo -e "${RED}Reminder: Only scan networks you own or have permission to test.${RESET}\n"
 
-    echo -ne "${CYAN}Enter the path to the Nmap results file: ${RESET}"
-    read results_file
+    echo -ne "${CYAN}Enter the target IP or range (e.g., 192.168.1.0/24): ${RESET}"
+    read TARGET
 
-    parse_nmap_results "$results_file"
+    if [[ -z "$TARGET" ]]; then
+        echo -e "${RED}No target provided. Exiting...${RESET}"
+        exit 1
+    fi
+
+    echo -e "${BLUE}${BOLD}Performing Quick Scan...${RESET}"
+    loading_animation "Scanning"
+    nmap_results=$(nmap -sV --script vuln "$TARGET")
+
+    display_result "$nmap_results"
+    parse_nmap_results "$nmap_results"
 }
 
 # Check if required tools are installed
-if ! command -v nmap &>/dev/null || ! command -v searchsploit &>/dev/null; then
-    echo -e "${RED}Error: Required tools (Nmap, searchsploit) are not installed.${RESET}"
+if ! command -v nmap &>/dev/null; then
+    echo -e "${RED}Error: Nmap is not installed. Please install it and try again.${RESET}"
+    exit 1
+fi
+
+if ! command -v searchsploit &>/dev/null; then
+    echo -e "${RED}Error: searchsploit is not installed. Please install it and try again.${RESET}"
     exit 1
 fi
 
