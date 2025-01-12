@@ -1,6 +1,8 @@
-# OMAP - Full Power with Nmap
+# omapsX - Full Power with Nmap and searchsploit
 
 OMAP is an automated script designed to unleash the full potential of Nmap, one of the most powerful network scanning tools. This script provides an interactive interface to perform various scans, combine them, and display stylish results, offering a user-friendly and functional experience.
+
+### Reminder: This project is under construction, it is possible that the code you download may not work at all. If you want to use the software correctly, download the versions separately. You will find them in the “working” folder. Greetings and I hope you find it useful! 
 
 ## Key Features
 
@@ -19,3 +21,4 @@ OMAP is an automated script designed to unleash the full potential of Nmap, one 
 
 ### Full Compatibility:
 - Designed to work on any system with Nmap installed.
+
