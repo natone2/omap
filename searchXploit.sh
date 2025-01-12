@@ -33,12 +33,22 @@ function parse_nmap_results() {
 # Function to search for exploits using searchsploit
 function search_exploit() {
     local vuln="$1"
-    echo -e "${BLUE}${BOLD}Searching exploits for:${RESET} $vuln"
+
+    # Extraer el identificador de vulnerabilidad (MS, CVE, etc.)
+    local clean_vuln
+    clean_vuln=$(echo "$vuln" | grep -oE '(ms[0-9]{2}-[0-9]{3}|cve-[0-9]{4}-[0-9]+)')
+
+    if [[ -z "$clean_vuln" ]]; then
+        echo -e "${RED}No valid vulnerability identifier found in:${RESET} $vuln"
+        return
+    fi
+
+    echo -e "${BLUE}${BOLD}Searching exploits for:${RESET} $clean_vuln"
     local exploits
-    exploits=$(searchsploit "$vuln" 2>/dev/null)
+    exploits=$(searchsploit "$clean_vuln" 2>/dev/null)
 
     if [[ -z "$exploits" ]]; then
-        echo -e "${RED}No exploits found for:${RESET} $vuln"
+        echo -e "${RED}No exploits found for:${RESET} $clean_vuln"
     else
         echo -e "${GREEN}Exploits found:${RESET}"
         echo "$exploits"
