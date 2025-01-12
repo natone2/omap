@@ -4,8 +4,6 @@ OMAP is an automated script designed to unleash the full potential of Nmap, one 
 
 This project was born from the need to have automated tools for a Raspberry Pi Zero 2W. My idea is to make a set of tools to be able to carry this small computer in your pocket and be able to access a series of quick attacks. 
 
-### Reminder: This project is under construction, it is possible that the code you download may not work at all. If you want to use the software correctly, download the versions separately. You will find them in the “working” folder. Greetings and I hope you find it useful! 
-
 ## Key Features
 
 ### All Possible Nmap Scans:
@@ -24,3 +22,4 @@ This project was born from the need to have automated tools for a Raspberry Pi Z
 ### Full Compatibility:
 - Designed to work on any system with Nmap installed.
 
+### Reminder: This project is under construction, it is possible that the code you download may not work at all. If you want to use the software correctly, download the versions separately. You will find them in the “working” folder. Greetings and I hope you find it useful! 
