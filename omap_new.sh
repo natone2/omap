@@ -1,15 +1,15 @@
 #!/bin/bash
 
 # =========================================================
-# OMAP - Full Power with nmap
+# OMAP - Full Power with nmap (Enhanced with Export)
 # by StGlz
 # contact: natone@riseup.net
 # visit my ws: https://www.stglz-ecke.digital
 # =========================================================
 # DESCRIPTION:
 # This script unleashes the full potential of Nmap, offering
-# all possible scans, stylish output, and powerful combinations
-# for pentesters and network enthusiasts. Use responsibly!
+# all possible scans, stylish output, export options, and
+# powerful combinations for pentesters. Use responsibly!
 # =========================================================
 
 # Colors for aesthetics
@@ -20,6 +20,9 @@ BLUE=$(tput setaf 4)
 CYAN=$(tput setaf 6)
 BOLD=$(tput bold)
 RESET=$(tput sgr0)
+
+# Export results
+OUTPUT_FILE=""
 
 # Loading animation
 function loading_animation() {
@@ -44,6 +47,15 @@ function display_result() {
             echo -e "${CYAN}${line}${RESET}"
         fi
     done
+}
+
+# Export results
+function export_result() {
+    if [[ -n "$OUTPUT_FILE" ]]; then
+        echo -e "${CYAN}Saving results to ${BOLD}${OUTPUT_FILE}${RESET}..."
+        echo "$1" >"$OUTPUT_FILE"
+        echo -e "${GREEN}Results saved successfully.${RESET}"
+    fi
 }
 
 # Basic scans
@@ -74,6 +86,7 @@ function basic_scans() {
         ;;
     esac
     display_result "$result"
+    export_result "$result"
 }
 
 # Advanced scans
@@ -104,6 +117,7 @@ function advanced_scans() {
         ;;
     esac
     display_result "$result"
+    export_result "$result"
 }
 
 # Combined scans
@@ -129,6 +143,7 @@ function combined_scans() {
         ;;
     esac
     display_result "$result"
+    export_result "$result"
 }
 
 # Main function
@@ -145,6 +160,9 @@ function main_menu() {
         echo -e "${RED}No target provided. Exiting...${RESET}"
         exit 1
     fi
+
+    echo -ne "${CYAN}Enter output file name (e.g., results.txt) or leave blank to skip saving: ${RESET}"
+    read OUTPUT_FILE
 
     while true; do
         echo -e "\n${CYAN}${BOLD}=== Main Menu ===${RESET}"
@@ -181,6 +199,10 @@ if ! command -v nmap &>/dev/null; then
     echo -e "${RED}Error: Nmap is not installed. Please install it and try again.${RESET}"
     exit 1
 fi
+
+# Run the main menu
+main_menu
+
 
 # Run the main menu
 main_menu
