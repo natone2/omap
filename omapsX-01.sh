@@ -79,8 +79,8 @@ function search_exploit() {
 
 # Main function
 function main() {
-    echo -e "${CYAN}${BOLD}=== Nmap and Exploit Finder ===${RESET}"
-    echo -e "${GREEN}Analyze Nmap results and find exploits with searchsploit.${RESET}"
+    echo -e "${CYAN}${BOLD}=== OMAPsX, unleash the beast ===${RESET}"
+    echo -e "${GREEN}OMAP & sX together. Analyze Nmap results and find exploits with searchsploit.${RESET}"
 
     # Check if Nmap and searchsploit are installed
     if ! command -v nmap &>/dev/null || ! command -v searchsploit &>/dev/null; then
