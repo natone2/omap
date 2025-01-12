@@ -34,7 +34,7 @@ function parse_nmap_results() {
 function search_exploit() {
     local vuln="$1"
 
-    # Extraer el identificador de vulnerabilidad (MS, CVE, etc.)
+    # Extraer el identificador de vulnerabilidad
     local clean_vuln
     clean_vuln=$(echo "$vuln" | grep -oE '(ms[0-9]{2}-[0-9]{3}|cve-[0-9]{4}-[0-9]+)')
 
@@ -45,28 +45,37 @@ function search_exploit() {
 
     echo -e "${BLUE}${BOLD}Searching exploits for:${RESET} $clean_vuln"
     local exploits
-    exploits=$(searchsploit "$clean_vuln" 2>/dev/null)
+    exploits=$(searchsploit -w "$clean_vuln" 2>/dev/null)
 
-    if [[ -z "$exploits" ]]; then
+    # Filtrar resultados útiles
+    local filtered_exploits
+    filtered_exploits=$(echo "$exploits" | awk 'NR > 2 && $1 != "Shellcodes:"')
+
+    if [[ -z "$filtered_exploits" ]]; then
         echo -e "${RED}No exploits found for:${RESET} $clean_vuln"
     else
         echo -e "${GREEN}Exploits found:${RESET}"
-        echo "$exploits"
-        echo -e "\n${CYAN}${BOLD}How to use:${RESET}"
-        echo "$exploits" | while IFS= read -r exploit_line; do
-            if [[ $exploit_line == *".rb"* ]]; then
-                echo -e "  • Use in Metasploit: ${BOLD}msfconsole -r <exploit_path>${RESET}"
-            elif [[ $exploit_line == *".py"* ]]; then
-                echo -e "  • Run directly: ${BOLD}python <exploit_path>${RESET}"
-            elif [[ $exploit_line == *".sh"* ]]; then
-                echo -e "  • Execute script: ${BOLD}bash <exploit_path>${RESET}"
+        echo "$filtered_exploits" | while IFS= read -r exploit_line; do
+            # Extraer la ruta del exploit
+            exploit_path=$(echo "$exploit_line" | awk '{print $NF}')
+            
+            # Determinar el tipo de exploit por extensión
+            if [[ "$exploit_path" == *".rb" ]]; then
+                echo -e "  • Use in Metasploit: ${BOLD}msfconsole -r $exploit_path${RESET}"
+            elif [[ "$exploit_path" == *".py" ]]; then
+                echo -e "  • Run directly: ${BOLD}python $exploit_path${RESET}"
+            elif [[ "$exploit_path" == *".sh" ]]; then
+                echo -e "  • Execute script: ${BOLD}bash $exploit_path${RESET}"
+            elif [[ "$exploit_path" == *".c" ]]; then
+                echo -e "  • Compile and run: ${BOLD}gcc -o exploit $exploit_path && ./exploit${RESET}"
             else
-                echo -e "  • Review exploit manually: ${BOLD}$exploit_line${RESET}"
+                echo -e "  • Review manually: ${BOLD}$exploit_line${RESET}"
             fi
         done
     fi
     echo ""
 }
+
 
 # Main function
 function main() {
